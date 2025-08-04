@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drive Video Viewer</title>
+    <title>Simple Video Viewer</title>
     <style>
         body {
-            font-family: 'Roboto', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #f5f5f5;
@@ -23,16 +23,16 @@
             gap: 10px;
         }
         
-        #driveUrl {
+        #folderUrl {
             flex-grow: 1;
-            padding: 12px 15px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
         }
         
         #loadBtn {
-            padding: 12px 20px;
+            padding: 10px 20px;
             background-color: #4285f4;
             color: white;
             border: none;
@@ -41,17 +41,13 @@
             font-size: 16px;
         }
         
-        #loadBtn:hover {
-            background-color: #3367d6;
-        }
-        
-        .video-grid {
+        .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
         }
         
-        .video-item {
+        .image-item {
             background-color: white;
             border-radius: 8px;
             overflow: hidden;
@@ -60,45 +56,14 @@
             transition: transform 0.2s;
         }
         
-        .video-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        .image-item:hover {
+            transform: scale(1.03);
         }
         
-        .video-thumbnail {
-            position: relative;
+        .image-item img {
             width: 100%;
-            padding-top: 56.25%; /* 16:9 aspect ratio */
-            background-color: #eee;
-            overflow: hidden;
-        }
-        
-        .video-thumbnail img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            height: 150px;
             object-fit: cover;
-        }
-        
-        .video-duration {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            background-color: rgba(0,0,0,0.7);
-            color: white;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        
-        .video-title {
-            padding: 10px;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
         
         .player-container {
@@ -116,7 +81,7 @@
         
         .player-wrapper {
             width: 90%;
-            max-width: 900px;
+            max-width: 800px;
         }
         
         #videoPlayer {
@@ -137,42 +102,16 @@
             cursor: pointer;
             font-size: 20px;
         }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .loading-spinner {
-            border: 4px solid rgba(0,0,0,0.1);
-            border-radius: 50%;
-            border-top: 4px solid #4285f4;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <input type="text" id="driveUrl" placeholder="Paste Google Drive folder link here...">
-            <button id="loadBtn">Load Videos</button>
+            <input type="text" id="folderUrl" placeholder="Enter base URL for images/videos (e.g., https://example.com/media/)">
+            <button id="loadBtn">Load Media</button>
         </div>
         
-        <div class="loading">
-            <div class="loading-spinner"></div>
-            <div>Loading videos...</div>
-        </div>
-        
-        <div class="video-grid" id="videoGrid"></div>
+        <div class="image-grid" id="imageGrid"></div>
     </div>
     
     <div class="player-container" id="playerContainer">
@@ -187,179 +126,78 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const driveUrlInput = document.getElementById('driveUrl');
+            const folderUrlInput = document.getElementById('folderUrl');
             const loadBtn = document.getElementById('loadBtn');
-            const videoGrid = document.getElementById('videoGrid');
+            const imageGrid = document.getElementById('imageGrid');
             const playerContainer = document.getElementById('playerContainer');
             const videoPlayer = document.getElementById('videoPlayer');
             const closePlayer = document.getElementById('closePlayer');
             const nowPlaying = document.getElementById('nowPlaying');
-            const loading = document.querySelector('.loading');
             
-            // Handle paste event to auto-detect Google Drive links
-            driveUrlInput.addEventListener('paste', function(e) {
-                setTimeout(() => {
-                    const text = this.value.trim();
-                    if (text.includes('drive.google.com')) {
-                        loadVideos();
-                    }
-                }, 10);
+            // Example structure - in reality you would fetch this from a server
+            const mediaFiles = [
+                { image: '1.png', video: 'video1.mp4', name: 'Video 1' },
+                { image: '2.png', video: 'video2.mp4', name: 'Video 2' },
+                { image: '3.png', video: 'video3.mp4', name: 'Video 3' },
+                { image: '4.png', video: 'video4.mp4', name: 'Video 4' },
+                { image: '5.png', video: 'video5.mp4', name: 'Video 5' },
+                { image: '6.png', video: 'video6.mp4', name: 'Video 6' }
+            ];
+            
+            loadBtn.addEventListener('click', function() {
+                const baseUrl = folderUrlInput.value.trim();
+                if (!baseUrl) {
+                    alert('Please enter a base URL');
+                    return;
+                }
+                
+                loadMedia(baseUrl);
             });
             
-            // Load button click handler
-            loadBtn.addEventListener('click', loadVideos);
-            
-            // Close video player
             closePlayer.addEventListener('click', function() {
                 playerContainer.style.display = 'none';
                 videoPlayer.pause();
             });
             
-            // Long press detection variables
-            let longPressTimer;
-            let isLongPress = false;
-            
-            function loadVideos() {
-                const driveUrl = driveUrlInput.value.trim();
-                if (!driveUrl.includes('drive.google.com')) {
-                    alert('Please enter a valid Google Drive folder link');
-                    return;
+            function loadMedia(baseUrl) {
+                imageGrid.innerHTML = '';
+                
+                // Ensure base URL ends with a slash
+                if (!baseUrl.endsWith('/')) {
+                    baseUrl += '/';
                 }
                 
-                // Extract folder ID from URL
-                let folderId;
-                if (driveUrl.includes('/folders/')) {
-                    folderId = driveUrl.split('/folders/')[1].split('?')[0].split('/')[0];
-                } else if (driveUrl.includes('id=')) {
-                    folderId = driveUrl.split('id=')[1].split('&')[0];
-                } else {
-                    alert('Could not extract folder ID from the link');
-                    return;
-                }
-                
-                loading.style.display = 'block';
-                videoGrid.innerHTML = '';
-                
-                // In a real implementation, you would need a backend service to access Google Drive API
-                // This is a mock implementation for demonstration
-                // For a real app, you would need to use Google Drive API with proper authentication
-                
-                // Simulate API call delay
-                setTimeout(() => {
-                    // Mock data - in reality you would get this from Google Drive API
-                    const mockVideos = [
-                        {
-                            id: '1abc',
-                            name: 'Sample Video 1.mp4',
-                            thumbnail: 'https://img.youtube.com/vi/example1/mqdefault.jpg',
-                            duration: '2:45',
-                            url: 'https://drive.google.com/file/d/1abc/preview'
-                        },
-                        {
-                            id: '2def',
-                            name: 'Sample Video 2.mp4',
-                            thumbnail: 'https://img.youtube.com/vi/example2/mqdefault.jpg',
-                            duration: '5:20',
-                            url: 'https://drive.google.com/file/d/2def/preview'
-                        },
-                        {
-                            id: '3ghi',
-                            name: 'Longer Video Name That Might Get Trimmed.mp4',
-                            thumbnail: 'https://img.youtube.com/vi/example3/mqdefault.jpg',
-                            duration: '10:15',
-                            url: 'https://drive.google.com/file/d/3ghi/preview'
-                        },
-                        {
-                            id: '4jkl',
-                            name: 'Sample Video 4.mp4',
-                            thumbnail: 'https://img.youtube.com/vi/example4/mqdefault.jpg',
-                            duration: '1:30',
-                            url: 'https://drive.google.com/file/d/4jkl/preview'
-                        }
-                    ];
+                mediaFiles.forEach(item => {
+                    const imageItem = document.createElement('div');
+                    imageItem.className = 'image-item';
                     
-                    displayVideos(mockVideos);
-                    loading.style.display = 'none';
-                }, 1500);
-            }
-            
-            function displayVideos(videos) {
-                videoGrid.innerHTML = '';
-                
-                videos.forEach(video => {
-                    const videoItem = document.createElement('div');
-                    videoItem.className = 'video-item';
-                    videoItem.dataset.videoId = video.id;
-                    videoItem.dataset.videoUrl = video.url;
-                    videoItem.dataset.videoName = video.name;
+                    // Store the corresponding video URL in a data attribute
+                    imageItem.dataset.videoUrl = baseUrl + item.video;
+                    imageItem.dataset.videoName = item.name;
                     
-                    videoItem.innerHTML = `
-                        <div class="video-thumbnail">
-                            <img src="${video.thumbnail}" alt="${video.name}">
-                            <div class="video-duration">${video.duration}</div>
-                        </div>
-                        <div class="video-title">${video.name}</div>
-                    `;
+                    const img = document.createElement('img');
+                    img.src = baseUrl + item.image;
+                    img.alt = item.name;
                     
-                    // Click handler for normal play
-                    videoItem.addEventListener('click', function(e) {
-                        if (isLongPress) {
-                            isLongPress = false;
-                            return;
-                        }
-                        
+                    imageItem.appendChild(img);
+                    imageItem.addEventListener('click', function() {
                         playVideo(this.dataset.videoUrl, this.dataset.videoName);
                     });
                     
-                    // Long press handlers
-                    videoItem.addEventListener('mousedown', function(e) {
-                        startLongPress(this);
-                    });
-                    
-                    videoItem.addEventListener('touchstart', function(e) {
-                        startLongPress(this);
-                    });
-                    
-                    videoItem.addEventListener('mouseup', cancelLongPress);
-                    videoItem.addEventListener('mouseleave', cancelLongPress);
-                    videoItem.addEventListener('touchend', cancelLongPress);
-                    
-                    videoGrid.appendChild(videoItem);
+                    imageGrid.appendChild(imageItem);
                 });
             }
             
-            function startLongPress(element) {
-                isLongPress = false;
-                longPressTimer = setTimeout(() => {
-                    isLongPress = true;
-                    playVideoWithoutSound(element.dataset.videoUrl, element.dataset.videoName);
-                }, 800); // 800ms for long press
-            }
-            
-            function cancelLongPress() {
-                clearTimeout(longPressTimer);
-            }
-            
             function playVideo(videoUrl, videoName) {
-                // Convert preview URL to direct download URL (this might not work without proper authentication)
-                const directUrl = videoUrl.replace('/preview', '');
-                
                 nowPlaying.textContent = `Now Playing: ${videoName}`;
-                videoPlayer.src = directUrl;
-                videoPlayer.volume = 1.0;
+                videoPlayer.src = videoUrl;
                 playerContainer.style.display = 'flex';
                 videoPlayer.play();
             }
             
-            function playVideoWithoutSound(videoUrl, videoName) {
-                // Convert preview URL to direct download URL
-                const directUrl = videoUrl.replace('/preview', '');
-                
-                nowPlaying.textContent = `Preview (Muted): ${videoName}`;
-                videoPlayer.src = directUrl;
-                videoPlayer.volume = 0.0;
-                playerContainer.style.display = 'flex';
-                videoPlayer.play();
+            // Load default example if URL is already entered
+            if (folderUrlInput.value) {
+                loadBtn.click();
             }
         });
     </script>
