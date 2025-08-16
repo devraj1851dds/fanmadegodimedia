@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Fan Made Andhbhakt</title>
+    <title>texture</title>
     <style>
         body { font-family: Arial; background: #111; color: white; margin: 0; padding: 20px; }
         h1 { text-align: center; color: #ff6666; }
         .search-box { text-align: center; margin: 20px; }
         input { padding: 10px; width: 300px; }
-        button { padding: 10px 15px; background: #ff6666; color: white; border: none; }
+        button { padding: 10px 15px; background: #ff6666; color: white; border: none; cursor: pointer; }
         .images { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
         .image { width: 200px; background: #222; border-radius: 5px; overflow: hidden; }
         .image img { width: 100%; height: auto; }
@@ -28,23 +28,27 @@
     </div>
     
     <script>
-        // Simple image names (replace with your actual image names)
+        // Simple image names
         const imageNames = [
-            "wall", "car", "fan car 46", "fan", "bike", "tree", "house", 
+            "wall", "Ground", "fan car 46", "fan", "bike", "tree", "house", 
             "road", "sky", "water", "fire", "earth", "mountain", "river"
-            // Add more names here (up to 10000)
         ];
         
+        // 👇 Change extension to .jpg
+        function getFileName(name) {
+            return name.toLowerCase().replace(/ /g, '_') + '.jpg';
+        }
+
         // Show random images when page loads
         function showRandomImages() {
             let html = '';
             for (let i = 0; i < 20; i++) {
                 const randomIndex = Math.floor(Math.random() * imageNames.length);
                 const name = imageNames[randomIndex];
-                const filename = name.toLowerCase().replace(/ /g, '_') + '.png';
+                const filename = getFileName(name);
                 html += `
                     <div class="image">
-                        <img src="png/${filename}" alt="${name}">
+                        <img src="jpg/${filename}" alt="${name}">
                         <p>${name}</p>
                     </div>
                 `;
@@ -59,10 +63,10 @@
             
             imageNames.forEach(name => {
                 if (name.toLowerCase().includes(term)) {
-                    const filename = name.toLowerCase().replace(/ /g, '_') + '.png';
+                    const filename = getFileName(name);
                     html += `
                         <div class="image">
-                            <img src="png/${filename}" alt="${name}">
+                            <img src="jpg/${filename}" alt="${name}">
                             <p>${name}</p>
                         </div>
                     `;
