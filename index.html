@@ -10,13 +10,28 @@
         input { padding: 10px; width: 300px; }
         button { padding: 10px 15px; background: #ff6666; color: white; border: none; cursor: pointer; }
         .images { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-        .image { width: 200px; background: #222; border-radius: 5px; overflow: hidden; }
+        .image { width: 200px; background: #222; border-radius: 8px; overflow: hidden; text-align: center; }
         .image img { width: 100%; height: auto; }
-        .image p { padding: 10px; margin: 0; text-align: center; }
+        .image p { padding: 8px; margin: 0; }
+        .download-btn {
+            display: inline-block;
+            margin: 8px;
+            padding: 6px 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .download-btn:hover {
+            background: #218838;
+        }
     </style>
 </head>
 <body>
-    <h1>textuer</h1>
+    <h1>Fan Made Andhbhakt</h1>
     
     <div class="search-box">
         <input type="text" id="search" placeholder="Search images (e.g., car, fan)">
@@ -28,39 +43,39 @@
     </div>
     
     <script>
-        // Base names only (without numbers)
         const imageNames = [
             "wall", "Ground"
-        ];
 
-        // Generate possible filenames with (1), (2), ... up to 20
         function getFileNames(baseName) {
             const files = [];
-            files.push(baseName + ".jpg"); // main file
+            files.push(baseName + ".jpg");
             for (let i = 1; i <= 20; i++) {
                 files.push(baseName + " (" + i + ").jpg");
             }
             return files;
         }
 
-        // Show random images
+        function createImageCard(filename, base) {
+            return `
+                <div class="image">
+                    <img src="jpg/${filename}" alt="${base}">
+                    <p>${base}</p>
+                    <a class="download-btn" href="jpg/${filename}" download>Download</a>
+                </div>
+            `;
+        }
+
         function showRandomImages() {
             let html = '';
             imageNames.forEach(base => {
                 const files = getFileNames(base);
                 files.forEach(filename => {
-                    html += `
-                        <div class="image">
-                            <img src="jpg/${filename}" alt="${base}">
-                            <p>${base}</p>
-                        </div>
-                    `;
+                    html += createImageCard(filename, base);
                 });
             });
             document.getElementById('images').innerHTML = html;
         }
 
-        // Search function
         function search() {
             const term = document.getElementById('search').value.toLowerCase();
             let html = '';
@@ -69,12 +84,7 @@
                 if (base.toLowerCase().includes(term)) {
                     const files = getFileNames(base);
                     files.forEach(filename => {
-                        html += `
-                            <div class="image">
-                                <img src="jpg/${filename}" alt="${base}">
-                                <p>${base}</p>
-                            </div>
-                        `;
+                        html += createImageCard(filename, base);
                     });
                 }
             });
@@ -82,7 +92,6 @@
             document.getElementById('images').innerHTML = html || '<p>No images found</p>';
         }
 
-        // Start with images
         showRandomImages();
     </script>
 </body>
