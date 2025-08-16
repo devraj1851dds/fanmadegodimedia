@@ -28,55 +28,62 @@
     </div>
     
     <script>
-        // Simple image names
+        // Base names only (without numbers)
         const imageNames = [
             "wall", "Ground", "fan car 46", "fan", "bike", "tree", "house", 
             "road", "sky", "water", "fire", "earth", "mountain", "river"
         ];
-        
-        // 👇 Change extension to .jpg
-        function getFileName(name) {
-            return name.toLowerCase().replace(/ /g, '_') + '.jpg';
+
+        // Generate possible filenames with (1), (2), ... up to 20
+        function getFileNames(baseName) {
+            const files = [];
+            files.push(baseName + ".jpg"); // main file
+            for (let i = 1; i <= 20; i++) {
+                files.push(baseName + " (" + i + ").jpg");
+            }
+            return files;
         }
 
-        // Show random images when page loads
+        // Show random images
         function showRandomImages() {
             let html = '';
-            for (let i = 0; i < 20; i++) {
-                const randomIndex = Math.floor(Math.random() * imageNames.length);
-                const name = imageNames[randomIndex];
-                const filename = getFileName(name);
-                html += `
-                    <div class="image">
-                        <img src="jpg/${filename}" alt="${name}">
-                        <p>${name}</p>
-                    </div>
-                `;
-            }
+            imageNames.forEach(base => {
+                const files = getFileNames(base);
+                files.forEach(filename => {
+                    html += `
+                        <div class="image">
+                            <img src="jpg/${filename}" alt="${base}">
+                            <p>${base}</p>
+                        </div>
+                    `;
+                });
+            });
             document.getElementById('images').innerHTML = html;
         }
-        
+
         // Search function
         function search() {
             const term = document.getElementById('search').value.toLowerCase();
             let html = '';
-            
-            imageNames.forEach(name => {
-                if (name.toLowerCase().includes(term)) {
-                    const filename = getFileName(name);
-                    html += `
-                        <div class="image">
-                            <img src="jpg/${filename}" alt="${name}">
-                            <p>${name}</p>
-                        </div>
-                    `;
+
+            imageNames.forEach(base => {
+                if (base.toLowerCase().includes(term)) {
+                    const files = getFileNames(base);
+                    files.forEach(filename => {
+                        html += `
+                            <div class="image">
+                                <img src="jpg/${filename}" alt="${base}">
+                                <p>${base}</p>
+                            </div>
+                        `;
+                    });
                 }
             });
-            
+
             document.getElementById('images').innerHTML = html || '<p>No images found</p>';
         }
-        
-        // Start with random images
+
+        // Start with images
         showRandomImages();
     </script>
 </body>
